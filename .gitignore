@@ -141,3 +141,4 @@ ENV/
 
 master
 .idea
+.DS_Store

@@ -13,7 +13,7 @@ VALIDATION_SIZE = 2000
 IMAGE_TO_DISPLAY = 10 #显示第十张图片
 
 #读入训练集，在这之前要将csv保存为utf-8格式，否则会出现中文乱码的问题
-data = pd.read_csv('//Users//skyamz//Desktop//kaggledigit数据//train.csv')
+data = pd.read_csv('train.csv')
 #查看数据集有多少行多少列，显示数据集的前五行
 print('data({0[0]},{0[1]})'.format(data.shape))
 print (data.head())
@@ -247,17 +247,6 @@ for i in range(TRAINING_ITERATIONS):
             train_accuracy, validation_accuracy, i))
 
             validation_accuracies.append(validation_accuracy)
-            validation_accuracy = accuracy.eval(feed_dict={x: validation_images,
-                                                           y_: validation_labels,
-                                                           keep_prob: 1.0})
-            print('validation_accuracy => %.4f' % validation_accuracy)
-            plt.plot(x_range, train_accuracies, '-b', label='Training')
-            plt.plot(x_range, validation_accuracies, '-g', label='Validation')
-            plt.legend(loc='lower right', frameon=False)
-            plt.ylim(ymax=1.1, ymin=0.7)
-            plt.ylabel('accuracy')
-            plt.xlabel('step')
-            plt.show()
 
         else:
             print('training_accuracy => %.4f for step %d' % (train_accuracy, i))
@@ -271,9 +260,24 @@ for i in range(TRAINING_ITERATIONS):
     sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys, keep_prob: DROPOUT})
 
 
+# check final accuracy on validation set
+if(VALIDATION_SIZE):
+    validation_accuracy = accuracy.eval(feed_dict={x: validation_images,
+                                                   y_: validation_labels,
+                                                   keep_prob: 1.0})
+    print('validation_accuracy => %.4f'%validation_accuracy)
+    plt.plot(x_range, train_accuracies,'-b', label='Training')
+    plt.plot(x_range, validation_accuracies,'-g', label='Validation')
+    plt.legend(loc='lower right', frameon=False)
+    plt.ylim(ymax = 1.1, ymin = 0.7)
+    plt.ylabel('accuracy')
+    plt.xlabel('step')
+    plt.show()
+
+
 
 # read test data from CSV file
-test_images = pd.read_csv('../input/test.csv').values
+test_images = pd.read_csv('test.csv').values
 test_images = test_images.astype(np.float)
 
 # convert from [0:255] => [0.0:1.0]
