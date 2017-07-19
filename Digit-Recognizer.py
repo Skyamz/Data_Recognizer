@@ -1,16 +1,24 @@
+# -*- coding:utf-8 -*-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import tensorflow as tf
 
-#这些参数是根据经验以及结果来调整的，此参数组合可以让准确率到0.99
-LEARNING_RATE = 1e-4 #神经网络的学习率，先初始化为1e-4
-TRAINING_ITERATIONS = 2500#迭代的次数
-DROPOUT = 0.5#后期使用dropout算法来防止过拟合，dropout值选择0.5,说明一层神经元会有一半将被屏蔽，使其激活址值为0
-BATCH_SIZE = 50#每50个样本用于计算梯度下降算法
+'''
+这些参数是根据经验以及结果来调整的，此参数组合可以让准确率到0.99
+'''
+#神经网络的学习率，先初始化为1e-4
+LEARNING_RATE = 1e-4
+#迭代的次数
+TRAINING_ITERATIONS = 2500
+#后期使用dropout算法来防止过拟合，dropout值选择0.5,说明一层神经元会有一半将被屏蔽，使其激活址值为0
+DROPOUT = 0.5
+#每50个样本用于计算梯度下降算法
+BATCH_SIZE = 50
 VALIDATION_SIZE = 2000
-IMAGE_TO_DISPLAY = 10 #显示第十张图片
+#显示第十张图片
+IMAGE_TO_DISPLAY = 10
 
 #读入训练集，在这之前要将csv保存为utf-8格式，否则会出现中文乱码的问题
 data = pd.read_csv('train.csv')
@@ -22,9 +30,10 @@ print (data.head())
 images = data.iloc[:,1:].values
 #由于我们要将图像灰化，即把每个pixel都归一，所以要对pixel进行计算。将原本的int转化为float，方便观察归一化的结果。
 images = images.astype(np.float)
-# convert from [0:255] => [0.0:1.0]
-#经过统计，最大的pixel为255，所以给images矩阵都乘以1.0 / 255.0来进行归一化处理
-#像素值越接近于1，就越黑，越接近于0越白
+'''convert from [0:255] => [0.0:1.0]
+经过统计，最大的pixel为255，所以给images矩阵都乘以1.0 / 255.0来进行归一化处理
+像素值越接近于1，就越黑，越接近于0越白
+'''
 images = np.multiply(images, 1.0 / 255.0)
 #查看一下现在有多少张图片
 print('images({0[0]},{0[1]})'.format(images.shape))
@@ -44,16 +53,18 @@ def display(img):
     #将img矩阵从一行784列重塑成28行28列
     one_image = img.reshape(image_width, image_height)
     plt.axis('off')#不显示坐标尺寸
-    plt.imshow(one_image, cmap=cm.gray)
-    #这里的binary，我查不到具体含义，个人理解是以二进制的形式呈现图像。背景为白色，像素值越接近于1，就越黑，越接近于0越白
-    #我将binary改变成gray后，全部的黑白色都反转了
-# output image
+    plt.imshow(one_image, cmap=cm.binary)
+    '''这里的binary，我查不到具体含义，个人理解是以二进制的形式呈现图像。背景为白色，像素值越接近于1，就越黑，越接近于0越白
+       我将binary改变成gray后，全部的黑白色都反转了
+    '''
+#输出图像
 display(images[IMAGE_TO_DISPLAY])#显示第十个图片，查源数据可知应该显示数字'8'
 
 
-#ravel()函数返回的是这一列的视图，改变labels_flat的值时，原始的'label'也会改变
-#如果不想改变原始的'label'，则这里可以使用flatten()
-#labels_flat在这里存放的是结果集，即判断前面images是哪个数字
+'''ravel()函数返回的是这一列的视图，改变labels_flat的值时，原始的'label'也会改变
+   如果不想改变原始的'label'，则这里可以使用flatten()
+   labels_flat在这里存放的是结果集，即判断前面images是哪个数字
+'''
 labels_flat = data['label'].values.ravel()
 print('labels_flat({0})'.format(len(labels_flat)))#一共有42000个图片
 print ('labels_flat[{0}] => {1}'.format(IMAGE_TO_DISPLAY,labels_flat[IMAGE_TO_DISPLAY]))#试着去查找第十个数，看输出是否为8
@@ -62,12 +73,13 @@ labels_count = np.unique(labels_flat).shape[0]
 print('labels_count => {0}'.format(labels_count))
 
 
-# convert class labels from scalars to one-hot vectors
-# 0 => [1 0 0 0 0 0 0 0 0 0]
-# 1 => [0 1 0 0 0 0 0 0 0 0]
-# ...
-# 9 => [0 0 0 0 0 0 0 0 0 1]
-#将结果集进行one-hot编码，具体见上面的注释说明
+'''convert class labels from scalars to one-hot vectors
+   0 => [1 0 0 0 0 0 0 0 0 0]
+   1 => [0 1 0 0 0 0 0 0 0 0]
+   ...
+   9 => [0 0 0 0 0 0 0 0 0 1]
+   将结果集进行one-hot编码，具体见上面的注释说明
+'''
 def dense_to_one_hot(labels_dense, num_classes):
     num_labels = labels_dense.shape[0]
     index_offset = np.arange(num_labels) * num_classes
@@ -76,6 +88,7 @@ def dense_to_one_hot(labels_dense, num_classes):
     return labels_one_hot
 labels = dense_to_one_hot(labels_flat, labels_count)
 labels = labels.astype(np.uint8)
+test = 'labels({0[0]},{0[1]})'.format(labels.shape)
 print('labels({0[0]},{0[1]})'.format(labels.shape))
 print ('labels[{0}] => {1}'.format(IMAGE_TO_DISPLAY,labels[IMAGE_TO_DISPLAY]))
 
